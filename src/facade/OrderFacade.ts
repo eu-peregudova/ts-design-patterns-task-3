@@ -1,11 +1,30 @@
 import { Order } from "../state/Order";
+import { OrderFactory } from "../factory/OrderFactory";
+import { OrderGroup } from "../composite/OrderGroup";
+import { OrderItem } from "../composite/OrderItem";
+import { StandardProcessing } from "../strategy/StandardProcessing";
+import { ExpressProcessing } from "../strategy/ExpressProcessing";
+import {ExpressOrderFactory} from "../factory/ExpressOrder";
+import {StandardOrderFactory} from "../factory/StandardOrder";
 
 export class OrderFacade {
   private orders: { [id: string]: Order } = {};
   private nextOrderId = 0;
 
-  placeOrder(): string {
-    const order = new Order((this.nextOrderId++).toString());
+  placeOrder(orderType: string): string {
+    const isExpress = orderType === "express";
+    const factory: OrderFactory = isExpress
+      ? new ExpressOrderFactory()
+      : new StandardOrderFactory();
+    const order = factory.createOrder((this.nextOrderId++).toString());
+
+    const group = new OrderGroup();
+    group.add(new OrderItem("Widget", 100));
+    group.add(new OrderItem("Gadget", isExpress ? 200 : 150));
+    order.setComponents(group);
+
+    order.setProcessingStrategy(isExpress ? new ExpressProcessing() : new StandardProcessing());
+
     this.orders[order.id] = order;
     return order.id;
   }
@@ -26,7 +45,7 @@ export class OrderFacade {
     return Object.values(this.orders).map(order => ({
       id: order.id,
       status: order.getStateName(),
-      description: order.getStatus()
+      description: `${order.getDescription()}<br>Price: $${order.getTotalPrice()}<br>${order.process()}`
     }));
   }
 }

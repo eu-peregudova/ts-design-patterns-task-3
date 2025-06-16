@@ -12,7 +12,9 @@ export class UI {
 
   init() {
     document.getElementById("place-order-btn")!.addEventListener("click", () => {
-      const orderId = this.facade.placeOrder();
+      const typeSelect = document.getElementById("order-type") as HTMLSelectElement;
+      const orderType = typeSelect.value;
+      const orderId = this.facade.placeOrder(orderType);
       this.render();
     });
     this.render();
@@ -20,38 +22,31 @@ export class UI {
 
   render() {
     this.ordersList.innerHTML = "";
-
     const orders = this.facade.getAllOrders();
     if (orders.length === 0) {
       this.ordersList.innerHTML = "<p>No orders yet.</p>";
       return;
     }
-
     orders.forEach(order => {
       const card = document.createElement("div");
       card.className = "order-card";
-
       const info = document.createElement("div");
       info.className = "order-info";
       info.innerHTML = `
-                <strong>Order #${order.id}</strong><br>
-                Status: ${order.status}<br>
-                Description: ${order.description}
-            `;
+        <strong>Order #${order.id}</strong><br>
+        <span>Status: ${order.status}</span><br>
+        <span>${order.description}</span>
+      `;
+      card.appendChild(info);
 
-      const actions = document.createElement("div");
-      actions.className = "order-actions";
-      const nextBtn = document.createElement("button");
-      nextBtn.textContent = "Next Step";
-      nextBtn.disabled = order.status === "Shipped";
-      nextBtn.addEventListener("click", () => {
+      // Advance state button
+      const btn = document.createElement("button");
+      btn.textContent = "Advance State";
+      btn.onclick = () => {
         this.facade.advanceOrder(order.id);
         this.render();
-      });
-
-      actions.appendChild(nextBtn);
-      card.appendChild(info);
-      card.appendChild(actions);
+      };
+      card.appendChild(btn);
 
       this.ordersList.appendChild(card);
     });

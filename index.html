@@ -8,7 +8,14 @@
 <body>
 <div class="container">
     <h1>Order Management</h1>
-    <button id="place-order-btn">Place New Order</button>
+    <div>
+        <label for="order-type">Order Type:</label>
+        <select id="order-type">
+            <option value="standard">Standard</option>
+            <option value="express">Express</option>
+        </select>
+        <button id="place-order-btn">Place New Order</button>
+    </div>
     <div id="orders-list"></div>
 </div>
 <script type="module" src="/src/main.ts"></script>
